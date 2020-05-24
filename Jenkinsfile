@@ -3,12 +3,10 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                git clone https://github.com/ARB011292/project
-		sh 'echo "Hello World"'
                 sh '''
-                    echo "Multiline shell steps works too"
-                    echo $HOME
-		    ls -lah
+	             aws ecs register-task-definition --family application-stack --cli-input-json file://task.json
+		     TASK_REVISION=`aws ecs describe-task-definition --task-definition application-stack  | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//'`
+		     aws ecs update-service --cluster <cluster-name> --service <service-name> --task-definition application-stack:$TASK_REVISION --desired-count 1
                 '''
             }
         }
